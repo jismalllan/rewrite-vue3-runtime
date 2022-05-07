@@ -74,6 +74,7 @@ describe('effect', () => {
         expect(dummy).toBe(2);
 
         runner();
+        // 重新执行，可以触发依赖收集
         expect(dummy).toBe(3);
     })
 

@@ -1,4 +1,4 @@
-import {isReadonly, readonly} from "../reactive";
+import {isProxy, isReadonly, readonly} from "../reactive";
 
 describe('readonly',()=>{
     it('r1', function () {
@@ -18,5 +18,6 @@ describe('readonly',()=>{
         observer.age++;
         expect(console.warn).toBeCalled()
         expect(isReadonly(observer)).toBe(true)
+        expect(isProxy(observer)).toBe(true)
     });
 })

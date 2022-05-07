@@ -20,9 +20,15 @@ function isReadonly(raw){
     return !!raw['is_readonly']
 }
 
+function isProxy(raw){
+    return isReactive(raw)||isReadonly(raw);
+}
+
+
 export {
     reactive,
     readonly,
     isReactive,
-    isReadonly
+    isReadonly,
+    isProxy
 };
