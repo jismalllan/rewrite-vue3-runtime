@@ -1,8 +1,12 @@
+import {publicInstanceProxyHandles} from "./componentPublicInstance";
+import {isObject} from "../shared/index";
+
 export function createComponentInstance(vnode){
 
     const componentInstance = {
         vnode,
-        type:vnode.type
+        type:vnode.type,
+        setupState:{}
     }
 
     return componentInstance;
@@ -16,9 +20,11 @@ export function setupComponent(instance) {
 }
 
 function setupStatefulComponent(instance){
-    const component = instance.type;
-    const {setup} = component;
+    const Component = instance.type;
 
+    instance.proxy = new Proxy({_:instance},publicInstanceProxyHandles)
+
+    const {setup} = Component;
     if(setup){
         // 如果setup返回值为函数,那么它是一个render函数
         // 如果是一个对象,就把它注入到组件上下文中
@@ -31,7 +37,7 @@ function setupStatefulComponent(instance){
 function handleSetupResult(instance,setupResult: any) {
 
     // 赋值到实例上
-    if(typeof setupResult === 'object'){
+    if(isObject(setupResult)){
         instance.setupState = setupResult;
     }
 
@@ -45,6 +51,5 @@ function finishComponentResult(instance) {
     if(Component.render){
         instance.render = Component.render;
     }
-
 
 }

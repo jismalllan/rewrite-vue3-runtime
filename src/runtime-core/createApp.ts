@@ -7,9 +7,7 @@ export function createApp(rootComponent) {
         mount(rootContainer) {
             // 把rootComponent转化为VNode
             //    此后所有操作基于VNode
-            console.log(rootComponent);
             const vnode = createVNode(rootComponent);
-            console.log(vnode);
 
             render(vnode, rootContainer);
         }
