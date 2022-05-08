@@ -2,10 +2,12 @@
   "name": "rewrite-vue3",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "lib/guide-vue.cjs.js",
+  "module": "lib/guide-vue.esm.js",
   "scripts": {
     "test": "jest",
-    "testw": "jest --watch"
+    "testw": "jest --watch",
+    "build": "rollup -c rollup.config.js"
   },
   "keywords": [],
   "author": "",
@@ -19,8 +21,11 @@
     "typescript": "^4.6.4"
   },
   "devDependencies": {
+    "@rollup/plugin-typescript": "^8.3.2",
     "@types/jest": "^27.5.0",
     "jest-environment-jsdom": "^28.0.2",
-    "ts-node": "^10.7.0"
+    "rollup": "^2.72.1",
+    "ts-node": "^10.7.0",
+    "tslib": "^2.4.0"
   }
 }

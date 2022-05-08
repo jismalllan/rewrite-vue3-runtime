@@ -1,4 +1,5 @@
-import {App} from "./App";
-import {createApp} from "../../src/runtime-core/createApp";
+import {App} from "./App.js";
+import {createApp} from "../../lib/guide-vue.esm.js";
 
-createApp(App).mount('#app')
+const app = document.querySelector('#app');
+createApp(App).mount(app);
