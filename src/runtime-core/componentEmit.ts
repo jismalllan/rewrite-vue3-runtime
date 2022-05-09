@@ -1,6 +1,6 @@
 import {camelize, onHandlerEvent} from "../shared/index";
 
-export function emit(instance, event,...args) {
+export function emitSum(instance, event,...args) {
 
     const {props} = instance;
 

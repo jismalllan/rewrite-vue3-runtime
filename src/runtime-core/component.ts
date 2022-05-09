@@ -2,7 +2,7 @@ import {publicInstanceProxyHandles} from "./componentPublicInstance";
 import {isObject} from "../shared/index";
 import {initProps} from "./componentProps";
 import {readonly} from "../reactivity/reactive";
-import {emit} from "./componentEmit";
+import {emitSum} from "./componentEmit";
 import {initSlot} from "./componentSlots";
 
 export function createComponentInstance(vnode){
@@ -16,18 +16,18 @@ export function createComponentInstance(vnode){
         emit:()=>{}
 
     }
-    componentInstance.emit = emit.bind(null,componentInstance)as any;
+    componentInstance.emit = emitSum.bind(null,componentInstance)as any;
 
     return componentInstance;
 }
 
 export function setupComponent(instance) {
-
     initProps(instance,instance.vnode.props);
     initSlot(instance,instance.vnode.children);
     setupStatefulComponent(instance);
 }
 
+let currentInstance = null;
 function setupStatefulComponent(instance){
     const Component = instance.type;
 
@@ -35,11 +35,13 @@ function setupStatefulComponent(instance){
 
     const {setup} = Component;
     if(setup){
+        setCurrentInstance(instance);
         // 如果setup返回值为函数,那么它是一个render函数
         // 如果是一个对象,就把它注入到组件上下文中
         const setupResult = setup(readonly(instance.props),{
             emit:instance.emit
         });
+        setCurrentInstance(null);
 
         handleSetupResult(instance,setupResult);
     }
@@ -63,4 +65,11 @@ function finishComponentResult(instance) {
         instance.render = Component.render;
     }
 
+}
+export function getCurrentInstance(){
+    return currentInstance;
+}
+
+function setCurrentInstance(value){
+    currentInstance = value;
 }
