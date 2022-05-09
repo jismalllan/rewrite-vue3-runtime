@@ -2,6 +2,7 @@ import {h} from "../../lib/guide-vue.esm.js";
 import {Foo} from "./Foo.js";
 import {ExamEmit} from "./ExamEmit.js";
 import {ExamSlot} from "./ExamSlot.js"
+import {createTextVNode} from "../../lib/guide-vue.esm.js";
 
 export const App = {
     // vue3
@@ -9,7 +10,7 @@ export const App = {
     render() {
         // this.$slots
         const slotContent1 = ({age}) => h('div', {class: 'a1'}, 'i am slot1:' + age);
-        const slotContent2 = () => h('div', {class: 'a1'}, 'i am slot2');
+        const slotContent2 = () => [createTextVNode('i am text '), h('div', {class: 'a1'}, 'i am slot2')];
 
         return h('h1',
             {

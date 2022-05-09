@@ -1,7 +1,7 @@
 import {createComponentInstance, setupComponent} from "./component";
 import {isObject} from "../shared/index";
 import {ShapeFlags} from "../shared/shapeFlags";
-import any = jasmine.any;
+import {Fragment, Text} from "./vnode";
 
 export function render(vnode, container) {
     patch(vnode, container);
@@ -9,13 +9,27 @@ export function render(vnode, container) {
 
 function patch(vnode, container) {
     // 判断是组件还是element
-    const {shapeFlags} = vnode;
+    const {type, shapeFlags} = vnode;
 
-    if (shapeFlags & ShapeFlags.ELEMENT) {
+    if (type === Fragment) {
+        processFragment(vnode, container);
+    } else if (type === Text) {
+        processText(vnode, container);
+    } else if (shapeFlags & ShapeFlags.ELEMENT) {
         processElement(vnode, container);
     } else if (shapeFlags & ShapeFlags.STATEFUL_COMPONENT) {
         processComponent(vnode, container);
     }
+}
+
+function processText(vnode, container) {
+    const {children} = vnode;
+    const textNode = (vnode.el = document.createTextNode(children));
+    container.append(textNode);
+}
+
+function processFragment(vnode, container) {
+    mountChildren(vnode.children, container);
 }
 
 // element
