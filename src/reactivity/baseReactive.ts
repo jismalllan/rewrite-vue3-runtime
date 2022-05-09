@@ -1,6 +1,6 @@
 import {track, trigger} from "./effect";
 import {reactive, readonly} from "./reactive";
-import {isObject} from "../shared";
+import {isObject} from "../shared/index";
 
 const reactiveGet = createGetter(false),
     reactiveSet = createSetter(false),
@@ -48,7 +48,8 @@ function createSetter(isReadonly){
         }
     }else {
         return function set (target,key,value){
-            console.warn(`因为${target}为readonly类型，${key}的值无法更改为${value}`)
+            console.dir(target)
+            console.warn(`以上对象为readonly类型，${key}的值无法更改为${value}`)
             return true;
         }
     }

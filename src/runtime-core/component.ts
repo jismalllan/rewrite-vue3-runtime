@@ -1,20 +1,25 @@
 import {publicInstanceProxyHandles} from "./componentPublicInstance";
 import {isObject} from "../shared/index";
+import {initProps} from "./componentProps";
+import {readonly} from "../reactivity/reactive";
+import {emit} from "./componentEmit";
 
 export function createComponentInstance(vnode){
 
     const componentInstance = {
         vnode,
         type:vnode.type,
-        setupState:{}
+        setupState:{},
+        emit:()=>{}
     }
+    componentInstance.emit = emit.bind(null,componentInstance)as any;
 
     return componentInstance;
 }
 
 export function setupComponent(instance) {
 
-    // initProps();
+    initProps(instance,instance.vnode.props);
     // initSlot();
     setupStatefulComponent(instance);
 }
@@ -28,7 +33,9 @@ function setupStatefulComponent(instance){
     if(setup){
         // 如果setup返回值为函数,那么它是一个render函数
         // 如果是一个对象,就把它注入到组件上下文中
-        const setupResult = setup();
+        const setupResult = setup(readonly(instance.props),{
+            emit:instance.emit
+        });
 
         handleSetupResult(instance,setupResult);
     }

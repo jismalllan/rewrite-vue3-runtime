@@ -1,6 +1,11 @@
 import {reactiveHandlers, readonlyHandlers} from "./baseReactive";
+import {isObject} from "../shared/index";
 
 function createActiveObject(raw,handler){
+    if(!isObject(raw)){
+        console.warn(`target ${raw} is not a object,it cannot be handle by proxy`);
+        return;
+    }
     return new Proxy(raw,handler)
 }
 
