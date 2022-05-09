@@ -1,10 +1,20 @@
-export function initSlot(instance, children) {
+import {ShapeFlags} from "../shared/shapeFlags";
 
-    const slots = {};
+export function initSlot(instance, children) {
+    const {vnode} = instance;
+
+    if(vnode.shapeFlags & ShapeFlags.SLOTS_CHILDREN){
+        normalizeObjectSlots(instance.slots,children);
+    }
+}
+
+function normalizeObjectSlots(slots,children){
     for (const key in children){
         const value = children[key];
-        slots[key] = Array.isArray(value)?value:[value]
+        slots[key] = (props)=> slotConvertArray(value(props));
     }
+}
 
-    instance.slots = slots;
+function slotConvertArray(value){
+   return Array.isArray(value)?value:[value];
 }

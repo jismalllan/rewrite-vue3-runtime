@@ -8,8 +8,8 @@ export const App = {
     // template
     render() {
         // this.$slots
-        const slotContent1 = h('div', {class: 'a1'}, 'i am slot111');
-        const slotContent2 = h('div', {class: 'a1'}, 'i am slot2');
+        const slotContent1 = ({age}) => h('div', {class: 'a1'}, 'i am slot1:' + age);
+        const slotContent2 = () => h('div', {class: 'a1'}, 'i am slot2');
 
         return h('h1',
             {
@@ -29,7 +29,7 @@ export const App = {
                         console.log(`emit1:${x} + ${y}`)
                     },
                     onAddFooBoo() {
-                        console.log('change add-foo-b')
+                        console.log('add-foo-boo change successfully onAddFooBoo')
                     }
                 }),
                 h(ExamSlot, {}, {
