@@ -3,6 +3,7 @@ import {isObject} from "../shared/index";
 import {initProps} from "./componentProps";
 import {readonly} from "../reactivity/reactive";
 import {emit} from "./componentEmit";
+import {initSlot} from "./componentSlots";
 
 export function createComponentInstance(vnode){
 
@@ -10,7 +11,10 @@ export function createComponentInstance(vnode){
         vnode,
         type:vnode.type,
         setupState:{},
+        props:{},
+        slots:{},
         emit:()=>{}
+
     }
     componentInstance.emit = emit.bind(null,componentInstance)as any;
 
@@ -20,7 +24,7 @@ export function createComponentInstance(vnode){
 export function setupComponent(instance) {
 
     initProps(instance,instance.vnode.props);
-    // initSlot();
+    initSlot(instance,instance.vnode.children);
     setupStatefulComponent(instance);
 }
 

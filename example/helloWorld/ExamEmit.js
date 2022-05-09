@@ -1,6 +1,6 @@
 import {h} from "../../lib/guide-vue.esm.js";
 
-export const Foo2 = {
+export const ExamEmit = {
     render(){
         const emitBtn = h('button',{
             onClick:this.event1
@@ -13,12 +13,10 @@ export const Foo2 = {
         return h(
             'div',
             {},
-            [emitBtn,div1]
+            [emitBtn]
         )
     },
     setup(props,{emit}){
-        console.log(props);
-
         const event1 = ()=>{
             // console.log('trigger emit event')
             emit('add-foo-boo',11,20)

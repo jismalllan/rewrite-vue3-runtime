@@ -1,14 +1,15 @@
 import {h} from "../../lib/guide-vue.esm.js";
 import {Foo} from "./Foo.js";
-import {Foo2} from "./Foo2.js";
-
-window.self = null;
+import {ExamEmit} from "./ExamEmit.js";
+import {ExamSlot} from "./ExamSlot.js"
 
 export const App = {
     // vue3
     // template
     render() {
-        window.self = this;
+        // this.$slots
+        const slotContent1 = h('div', {class: 'a1'}, 'i am slot111');
+        const slotContent2 = h('div', {class: 'a1'}, 'i am slot2');
 
         return h('h1',
             {
@@ -17,25 +18,23 @@ export const App = {
                 // onClick() {
                 //     console.log('hello vue3')
                 // },
-                // onMouseenter() {
-                //     console.log('enter')
-                // }
             },
             [
                 h('h1', {
                     class: ['title', 'size']
                 }, 'hello Vue3'),
-                h('div', {
-                    class: 'child2'
-                }, 'i am child2'),
-                h(Foo2, {
-                    count:2,
-                    onEmit1(x,y){
+                h(ExamEmit, {
+                    count: 2,
+                    onEmit1(x, y) {
                         console.log(`emit1:${x} + ${y}`)
                     },
-                    onAddFooBoo(){
+                    onAddFooBoo() {
                         console.log('change add-foo-b')
                     }
+                }),
+                h(ExamSlot, {}, {
+                    header: slotContent1,
+                    footer: slotContent2
                 })
             ]
             // 'hello '+this.msg1 + ' ' + this.date1

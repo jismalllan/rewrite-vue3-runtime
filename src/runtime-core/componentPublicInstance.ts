@@ -2,9 +2,14 @@ import has = Reflect.has;
 import {hasOwn} from "../shared/index";
 
 const keyMap = new Map()
-keyMap.set('$el',instance=>{
-    return instance.vnode.el;
+keyMap.set('$el',i=>{
+    return i.vnode.el;
 })
+
+keyMap.set('$slots',i=>{
+    return i.slots;
+})
+
 
 export const publicInstanceProxyHandles = {
     get({_:instance},key){
