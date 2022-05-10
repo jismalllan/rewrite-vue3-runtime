@@ -6,3 +6,5 @@ export const enum ShapeFlags{
     ARRAY_CHILDREN = 1 << 4, // 01 0000
     SLOTS_CHILDREN = 1 << 5 // 10 0000
 }
+
+export const EMPTY_OBJ = {};

@@ -1,6 +1,6 @@
 import {h} from "../../lib/guide-vue.esm.js";
 
-export const Foo = {
+export const ExamProps = {
     render(){
         // 2.打印this.count
         return h(
@@ -11,8 +11,9 @@ export const Foo = {
     },
     setup(props){
         // 1.props.count;
-        // 3.readonly props
         console.log(props);
+
+        // 3.readonly props
         props.count++;
     }
 }

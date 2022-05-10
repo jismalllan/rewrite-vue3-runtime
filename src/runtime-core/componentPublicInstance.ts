@@ -10,7 +10,6 @@ keyMap.set('$slots',i=>{
     return i.slots;
 })
 
-
 export const publicInstanceProxyHandles = {
     get({_:instance},key){
         const {setupState,props} = instance;

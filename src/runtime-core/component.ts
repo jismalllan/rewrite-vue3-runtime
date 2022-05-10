@@ -4,6 +4,7 @@ import {initProps} from "./componentProps";
 import {readonly} from "../reactivity/reactive";
 import {emitSum} from "./componentEmit";
 import {initSlot} from "./componentSlots";
+import {proxyRefs} from "../reactivity/ref";
 
 export function createComponentInstance(vnode){
 
@@ -13,8 +14,10 @@ export function createComponentInstance(vnode){
         setupState:{},
         props:{},
         slots:{},
-        emit:()=>{}
-
+        emit:()=>{},
+        parent:null,
+        isMounted:false,
+        subTree:{}
     }
     componentInstance.emit = emitSum.bind(null,componentInstance)as any;
 
@@ -51,7 +54,7 @@ function handleSetupResult(instance,setupResult: any) {
 
     // 赋值到实例上
     if(isObject(setupResult)){
-        instance.setupState = setupResult;
+        instance.setupState = proxyRefs(setupResult);
     }
 
     // 保证组件有render
