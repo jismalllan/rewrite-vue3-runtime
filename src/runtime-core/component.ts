@@ -6,16 +6,17 @@ import {emitSum} from "./componentEmit";
 import {initSlot} from "./componentSlots";
 import {proxyRefs} from "../reactivity/ref";
 
-export function createComponentInstance(vnode){
+export function createComponentInstance(vnode,parent){
 
     const componentInstance = {
         vnode,
         type:vnode.type,
         setupState:{},
         props:{},
-        slots:{},
         emit:()=>{},
-        parent:null,
+        slots:{},
+        parent:parent,
+        provides:parent?parent.provides:{},
         isMounted:false,
         subTree:{}
     }

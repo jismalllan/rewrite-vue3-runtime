@@ -13,28 +13,28 @@ export function createRender(options) {
     } = options;
 
     function render(vnode, container) {
-        patch(null, vnode, container);
+        patch(null, vnode, container, null);
     }
 
-    function patch(vnode1, vnode2, container) {
+    function patch(vnode1, vnode2, container,parentComponent) {
         // 判断是组件还是element
         const {type, shapeFlags} = vnode2;
 
         if (type === Fragment) {
-            processFragment(vnode1, vnode2, container);
+            processFragment(vnode1, vnode2, container,parentComponent);
         } else if (type === Text) {
             processText(vnode1, vnode2, container);
         } else if (shapeFlags & ShapeFlags.ELEMENT) {
-            processElement(vnode1, vnode2, container);
+            processElement(vnode1, vnode2, container,parentComponent);
         } else if (shapeFlags & ShapeFlags.STATEFUL_COMPONENT) {
-            processComponent(vnode1, vnode2, container);
+            processComponent(vnode1, vnode2, container,parentComponent);
         }
     }
 
 // vnode1 oldNode
 // vnode2 newNode
-    function processFragment(vnode1, vnode2, container) {
-        mountChildren(vnode2.children, container);
+    function processFragment(vnode1, vnode2, container,parentComponent) {
+        mountChildren(vnode2.children, container,parentComponent);
     }
 
     function processText(vnode1, vnode2, container) {
@@ -44,10 +44,10 @@ export function createRender(options) {
     }
 
 // element
-    function processElement(vnode1, vnode2, container) {
+    function processElement(vnode1, vnode2, container,parentComponent) {
 
         if (!vnode1) {
-            mountElement(vnode2, container);
+            mountElement(vnode2, container,parentComponent);
         } else {
             patchElement(vnode1, vnode2, container);
         }
@@ -87,7 +87,7 @@ export function createRender(options) {
         }
     }
 
-    function mountElement(vnode, container) {
+    function mountElement(vnode, container,parentComponent) {
 
         const el = (vnode.el = hostCreateElement(vnode.type));
 
@@ -95,7 +95,7 @@ export function createRender(options) {
         if (shapeFlags & ShapeFlags.TEXT_CHILDREN) {
             el.textContent = children;
         } else if (shapeFlags & ShapeFlags.ARRAY_CHILDREN) {
-            mountChildren(children, el);
+            mountChildren(children, el,parentComponent);
         }
 
         for (const key in props) {
@@ -106,22 +106,22 @@ export function createRender(options) {
         hostInsert(el, container);
     }
 
-    function mountChildren(children, container) {
+    function mountChildren(children, container,parentComponent) {
         children.forEach(v => {
-            patch(null, v, container)
+            patch(null, v, container,parentComponent)
         });
     }
 
 // component
-    function processComponent(vnode1, vnode2, container) {
+    function processComponent(vnode1, vnode2, container,parentComponent) {
 
-        mountComponent(vnode2, container);
+        mountComponent(vnode2, container,parentComponent);
 
     }
 
-    function mountComponent(vnode, container) {
+    function mountComponent(vnode, container,parentComponent) {
 
-        const instance = createComponentInstance(vnode);
+        const instance = createComponentInstance(vnode,parentComponent);
 
         setupComponent(instance);
 
@@ -135,7 +135,7 @@ export function createRender(options) {
                 const {proxy} = instance;
                 const subTree = (instance.subTree = instance.render.call(proxy));
 
-                patch(null, subTree, container);
+                patch(null, subTree, container,instance);
                 // 等全部subTree初始化完,赋值给vnode
                 vnode.el = subTree.el;
                 instance.isMounted = true;
@@ -146,7 +146,7 @@ export function createRender(options) {
                 const preSubTree = instance.subTree;
                 instance.subTree = subTree;
 
-                patch(preSubTree, subTree, container);
+                patch(preSubTree, subTree, container,instance);
             }
         })
     }

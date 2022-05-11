@@ -5,6 +5,7 @@ import {ExamUpdateMain} from "./ExamUpdateMain.js";
 import {ExamProps} from "./ExamProps.js";
 import {ExamEmit} from "./ExamEmit.js";
 import {ExamSlot} from "./ExamSlot.js"
+import {ExamProvide} from "./ExamProvide.js";
 
 // return
 /*
@@ -146,7 +147,7 @@ export const App = {
 }*/
 
 //updateMain
-export const App = {
+/*export const App = {
     render() {
         return h('div',
             {
@@ -202,6 +203,23 @@ export const App = {
             propsDemo2,
             propsDemo3
         }
+    }
+}*/
+
+// provide-inject
+export const App = {
+    render() {
+        return h('div',
+            {
+                id: 'rootId',
+            },
+            [
+                h(ExamProvide)
+            ]
+        );
+    },
+    setup() {
+
     }
 }
 
