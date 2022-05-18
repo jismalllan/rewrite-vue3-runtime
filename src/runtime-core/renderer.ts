@@ -100,7 +100,7 @@ export function createRender(options) {
             }
             i++;
         }
-        console.log('i', i)
+        console.log('i:', i)
 
         // 右侧向左移动
         while (i <= e1 && i <= e2) {
@@ -114,12 +114,13 @@ export function createRender(options) {
             e1--;
             e2--;
         }
-        console.log(e1, e2)
+        console.log('e1,e2:', e1, e2)
 
         if (i > e1) {
             // 新的比旧的多
             if (i <= e2) {
                 const insertNode = e2 + 1;
+                // 如果和长度相等，插入最后面
                 const anchor = insertNode < c2.length ? c2[insertNode].el : null;
                 while (i <= e2) {
                     patch(null, c2[i], container, parentComponent, anchor);
@@ -137,11 +138,13 @@ export function createRender(options) {
             let s1 = i,
                 s2 = i,
                 patched = 0;
-            const tobePatched = e2 -s2 +1;
+            const tobePatched = e2 - s2 + 1;
             const keyMap = new Map();
-
-            const newIndexToOldIndexMap = new Array(tobePatched).fill(0);
-
+            // 旧序号在新序列里的位置
+            const newIndexToOldIndexMap = new Array(tobePatched).fill(-1);
+            // 优化移动
+            let isMove = false,
+                maxIndexFar = 0;
             for (let i = s2; i <= e2; i++) {
                 const nextChild = c2[i];
                 keyMap.set(nextChild.key, i);
@@ -150,16 +153,15 @@ export function createRender(options) {
                 let newIndex;
                 const preChild = c1[i];
 
-                if(patched>=tobePatched){
+                if (patched >= tobePatched) {
                     hostRemove(preChild.el);
                     continue;
                 }
 
-
                 if (preChild.key !== null) {
                     newIndex = keyMap.get(preChild.key);
                 } else {
-                    console.log('no key')
+                    // no key
                     for (let j = s2; j <= e2; j++) {
                         if (isSomeVNodeType(preChild, c2[i])) {
                             newIndex = j;
@@ -171,32 +173,39 @@ export function createRender(options) {
                 if (newIndex === undefined) {
                     hostRemove(preChild.el);
                 } else {
-                    // 新的位置在旧图里的位置
-                    newIndexToOldIndexMap[newIndex-s2] = i + 1;
+
+                    // 优化
+                    if (newIndex > maxIndexFar) {
+                        maxIndexFar = newIndex;
+                    } else {
+                        isMove = true;
+                    }
+                    // 记录
+                    newIndexToOldIndexMap[newIndex - s2] = i ;
                     patch(preChild, c2[newIndex], container, parentComponent);
                     patched++;
                 }
             }
-            const increasingSeq = IndexOfLIS(newIndexToOldIndexMap)
-            console.log(increasingSeq)
+            // 判断是否需要计算最长递增子序列
+            const increasingSeq = isMove ? IndexOfLIS(newIndexToOldIndexMap) : [];
 
             let j = increasingSeq.length - 1;
-            for (let i = tobePatched -1;i>=0;i--){
-
-                const nextIndex = i+s2;
+            for (let i = tobePatched - 1; i >= 0; i--) {
+                // 加上前面的长度
+                const nextIndex = i + s2;
                 const nextChild = c2[nextIndex];
-                const anchor = nextIndex + 1<c2.length?c2[nextIndex+1].el:null;
+                const anchor = nextIndex + 1 < c2.length ? c2[nextIndex + 1].el : null;
 
                 // 增加
-                if(newIndexToOldIndexMap[i] === 0){
-                    patch(null,nextChild,container,parentComponent,anchor);
-                }
-                // 插入
-                if(i !== increasingSeq[j]){
-                    console.log('移动位置');
-                    hostInsert(nextChild.el,container,anchor)
-                }else {
-                    j--;
+                if (newIndexToOldIndexMap[i] === -1) {
+                    patch(null, nextChild, container, parentComponent, anchor);
+                } else if (isMove) {
+                    if (i !== increasingSeq[j] || j < 0) {
+                        // 移动
+                        hostInsert(nextChild.el, container, anchor)
+                    } else {
+                        j--;
+                    }
                 }
             }
 
