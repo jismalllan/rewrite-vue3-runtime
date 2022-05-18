@@ -6,4 +6,4 @@ export const newText = 'i am new child';
 
 export const oldArray = [h('div',{},'AAA'),h('div',{},'BBB')]
 
-export const newArray = [h('div',{},'AAA'),h('div',{},'CCC')]
+export const newArray = [h('div',{},'AAA'),h('div',{},'CCC'),h('div',{},'DDD')]

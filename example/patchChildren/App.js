@@ -3,6 +3,7 @@ import {ArrayToArray} from "./ArrayToArray.js";
 import {ArrayToText} from "./ArrayToText.js";
 import {TextToText} from "./TextToText.js";
 import {TextToArray} from "./TextToArray.js";
+import {Array} from "./Array.js";
 
 
 export const App = {
@@ -12,10 +13,11 @@ export const App = {
                 id: 'rootId',
             },
             [
+                h(Array),
                 // h(ArrayToArray),
                 // h(ArrayToText),
                 // h(TextToText),
-                h(TextToArray)
+                // h(TextToArray)
             ]
         );
     },

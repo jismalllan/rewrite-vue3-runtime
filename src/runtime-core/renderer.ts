@@ -3,6 +3,7 @@ import {EMPTY_OBJ, ShapeFlags} from "../shared/shapeFlags";
 import {Fragment, Text} from "./vnode";
 import {effect} from "../reactivity/effect";
 import {createAppInterface} from "./createApp";
+import {IndexOfLIS} from "./LIS";
 
 export function createRender(options) {
 
@@ -18,7 +19,7 @@ export function createRender(options) {
         patch(null, vnode, container, null);
     }
 
-    function patch(vnode1, vnode2, container, parentComponent) {
+    function patch(vnode1, vnode2, container, parentComponent, anchor = null) {
         // 判断是组件还是element
         const {type, shapeFlags} = vnode2;
 
@@ -27,7 +28,7 @@ export function createRender(options) {
         } else if (type === Text) {
             processText(vnode1, vnode2, container);
         } else if (shapeFlags & ShapeFlags.ELEMENT) {
-            processElement(vnode1, vnode2, container, parentComponent);
+            processElement(vnode1, vnode2, container, parentComponent, anchor);
         } else if (shapeFlags & ShapeFlags.STATEFUL_COMPONENT) {
             processComponent(vnode1, vnode2, container, parentComponent);
         }
@@ -46,10 +47,10 @@ export function createRender(options) {
     }
 
 // element
-    function processElement(vnode1, vnode2, container, parentComponent) {
+    function processElement(vnode1, vnode2, container, parentComponent, anchor) {
 
         if (!vnode1) {
-            mountElement(vnode2, container, parentComponent);
+            mountElement(vnode2, container, parentComponent, anchor);
         } else {
             patchElement(vnode1, vnode2, container, parentComponent);
         }
@@ -57,22 +58,148 @@ export function createRender(options) {
 
     function patchChild(vnode1, vnode2, elContainer, parentComponent) {
         const preShapeFlags = vnode1.shapeFlags;
-        const preText = vnode1.children;
+        const preChildren = vnode1.children;
         const nextShapeFlags = vnode2.shapeFlags;
-        const nextText = vnode2.children;
+        const nextChildren = vnode2.children;
 
         if (nextShapeFlags & ShapeFlags.TEXT_CHILDREN) {
             if (preShapeFlags & ShapeFlags.ARRAY_CHILDREN) {
-                unMountChildren(vnode1.children);
+                unMountChildren(preChildren);
             }
-            if (preText !== nextText) {
-                hostSetText(elContainer, nextText);
+            if (preChildren !== nextChildren) {
+                hostSetText(elContainer, nextChildren);
             }
         } else {
-            if (nextShapeFlags & ShapeFlags.ARRAY_CHILDREN) {
+            // if (nextShapeFlags & ShapeFlags.ARRAY_CHILDREN) {
+            if (preShapeFlags & ShapeFlags.TEXT_CHILDREN) {
                 hostSetText(elContainer, '');
-                mountChildren(vnode2.children, elContainer, parentComponent)
+                mountChildren(nextChildren, elContainer, parentComponent)
+            } else {
+                patchKeyedChildren(preChildren, nextChildren, elContainer, parentComponent);
             }
+        }
+    }
+
+    function patchKeyedChildren(c1, c2, container, parentComponent) {
+        let i = 0,
+            e1 = c1.length - 1,
+            e2 = c2.length - 1;
+
+        function isSomeVNodeType(n1, n2) {
+            return n1.type === n2.type && n1.key === n2.key;
+        }
+
+        // 左侧向右移动
+        while (i <= e1 && i <= e2) {
+            const n1 = c1[i],
+                n2 = c2[i];
+            if (isSomeVNodeType(n1, n2)) {
+                patch(n1, n2, container, parentComponent);
+            } else {
+                break;
+            }
+            i++;
+        }
+        console.log('i', i)
+
+        // 右侧向左移动
+        while (i <= e1 && i <= e2) {
+            const n1 = c1[e1],
+                n2 = c2[e2];
+            if (isSomeVNodeType(n1, n2)) {
+                patch(n1, n2, container, parentComponent);
+            } else {
+                break;
+            }
+            e1--;
+            e2--;
+        }
+        console.log(e1, e2)
+
+        if (i > e1) {
+            // 新的比旧的多
+            if (i <= e2) {
+                const insertNode = e2 + 1;
+                const anchor = insertNode < c2.length ? c2[insertNode].el : null;
+                while (i <= e2) {
+                    patch(null, c2[i], container, parentComponent, anchor);
+                    i++;
+                }
+            }
+        } else if (i > e2) {
+            // 新的比旧的少
+            while (i <= e1) {
+                hostRemove(c1[i].el);
+                i++;
+            }
+        } else {
+            // 中间乱序
+            let s1 = i,
+                s2 = i,
+                patched = 0;
+            const tobePatched = e2 -s2 +1;
+            const keyMap = new Map();
+
+            const newIndexToOldIndexMap = new Array(tobePatched).fill(0);
+
+            for (let i = s2; i <= e2; i++) {
+                const nextChild = c2[i];
+                keyMap.set(nextChild.key, i);
+            }
+            for (let i = s1; i <= e1; i++) {
+                let newIndex;
+                const preChild = c1[i];
+
+                if(patched>=tobePatched){
+                    hostRemove(preChild.el);
+                    continue;
+                }
+
+
+                if (preChild.key !== null) {
+                    newIndex = keyMap.get(preChild.key);
+                } else {
+                    console.log('no key')
+                    for (let j = s2; j <= e2; j++) {
+                        if (isSomeVNodeType(preChild, c2[i])) {
+                            newIndex = j;
+                            break;
+                        }
+                    }
+                }
+
+                if (newIndex === undefined) {
+                    hostRemove(preChild.el);
+                } else {
+                    // 新的位置在旧图里的位置
+                    newIndexToOldIndexMap[newIndex-s2] = i + 1;
+                    patch(preChild, c2[newIndex], container, parentComponent);
+                    patched++;
+                }
+            }
+            const increasingSeq = IndexOfLIS(newIndexToOldIndexMap)
+            console.log(increasingSeq)
+
+            let j = increasingSeq.length - 1;
+            for (let i = tobePatched -1;i>=0;i--){
+
+                const nextIndex = i+s2;
+                const nextChild = c2[nextIndex];
+                const anchor = nextIndex + 1<c2.length?c2[nextIndex+1].el:null;
+
+                // 增加
+                if(newIndexToOldIndexMap[i] === 0){
+                    patch(null,nextChild,container,parentComponent,anchor);
+                }
+                // 插入
+                if(i !== increasingSeq[j]){
+                    console.log('移动位置');
+                    hostInsert(nextChild.el,container,anchor)
+                }else {
+                    j--;
+                }
+            }
+
         }
     }
 
@@ -116,7 +243,7 @@ export function createRender(options) {
         }
     }
 
-    function mountElement(vnode, container, parentComponent) {
+    function mountElement(vnode, container, parentComponent, anchor) {
 
         const el = (vnode.el = hostCreateElement(vnode.type));
 
@@ -132,12 +259,12 @@ export function createRender(options) {
             const value = props[key];
             hostPatchProps(el, key, value);
         }
-        hostInsert(el, container);
+        hostInsert(el, container, anchor);
     }
 
     function mountChildren(children, container, parentComponent) {
         children.forEach(vnode => {
-            patch(null, vnode, container, parentComponent)
+            patch(null, vnode, container, parentComponent);
         });
     }
 
